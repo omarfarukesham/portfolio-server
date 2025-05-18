@@ -12,6 +12,7 @@ import cors from 'cors';
 import { CheckoutRoutes } from './module/checkout/checkout.routes';
 import { experienceRoutes } from './module/experience/experience.router';
 import { projectRoutes } from './module/projects/project.routes';
+import { skillRoutes } from './module/skills/skill.routes';
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/api/blogs', blogRouter);
 // app.use('/api/checkouts', CheckoutRoutes);
 app.use('/api/experience', experienceRoutes);
 app.use('/api/project', projectRoutes);
+app.use('/api/skill', skillRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send({

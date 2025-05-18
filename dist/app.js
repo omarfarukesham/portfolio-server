@@ -14,6 +14,7 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const cors_1 = __importDefault(require("cors"));
 const experience_router_1 = require("./module/experience/experience.router");
 const project_routes_1 = require("./module/projects/project.routes");
+const skill_routes_1 = require("./module/skills/skill.routes");
 const app = (0, express_1.default)();
 // CORS configuration has solved the issue
 const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5174', 'https://boitoi-admin.vercel.app', 'https://boitoi-marketplace.vercel.app', 'https://nextjs-blogs-sigma.vercel.app'];
@@ -42,6 +43,7 @@ app.use('/api/blogs', blog_router_1.default);
 // app.use('/api/checkouts', CheckoutRoutes);
 app.use('/api/experience', experience_router_1.experienceRoutes);
 app.use('/api/project', project_routes_1.projectRoutes);
+app.use('/api/skill', skill_routes_1.skillRoutes);
 app.get('/', (req, res) => {
     res.send({
         status: true,
