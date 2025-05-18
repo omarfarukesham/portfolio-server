@@ -10,11 +10,9 @@ const blog_router_1 = __importDefault(require("./module/blog/blog.router"));
 const globalErrorHandler_1 = require("./middlewares/globalErrorHandler");
 const admin_router_1 = __importDefault(require("./module/admin/admin.router"));
 const notFound_1 = __importDefault(require("./middlewares/notFound"));
-const product_routes_1 = require("./module/product/product.routes");
-const order_routes_1 = require("./module/order/order.routes");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const cors_1 = __importDefault(require("cors"));
-const checkout_routes_1 = require("./module/checkout/checkout.routes");
+const experience_router_1 = require("./module/experience/experience.router");
 const app = (0, express_1.default)();
 // CORS configuration has solved the issue
 const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5174', 'https://boitoi-admin.vercel.app', 'https://boitoi-marketplace.vercel.app', 'https://nextjs-blogs-sigma.vercel.app'];
@@ -38,9 +36,10 @@ app.use('/api/auth', auth_router_1.default);
 app.use('/api/admin', admin_router_1.default);
 app.use('/api/user', user_router_1.default);
 app.use('/api/blogs', blog_router_1.default);
-app.use('/api/products', product_routes_1.ProductRoutes);
-app.use('/api/orders', order_routes_1.OrderRoutes);
-app.use('/api/checkouts', checkout_routes_1.CheckoutRoutes);
+// app.use('/api/products', ProductRoutes);
+// app.use('/api/orders', OrderRoutes);
+// app.use('/api/checkouts', CheckoutRoutes);
+app.use('/api/experience', experience_router_1.experienceRoutes);
 app.get('/', (req, res) => {
     res.send({
         status: true,

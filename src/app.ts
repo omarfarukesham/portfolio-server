@@ -10,6 +10,7 @@ import { OrderRoutes } from './module/order/order.routes';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { CheckoutRoutes } from './module/checkout/checkout.routes';
+import { experienceRoutes } from './module/experience/experience.router';
 
 const app = express();
 
@@ -37,9 +38,10 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/user', userRouter);
 app.use('/api/blogs', blogRouter);
-app.use('/api/products', ProductRoutes);
-app.use('/api/orders', OrderRoutes);
-app.use('/api/checkouts', CheckoutRoutes);
+// app.use('/api/products', ProductRoutes);
+// app.use('/api/orders', OrderRoutes);
+// app.use('/api/checkouts', CheckoutRoutes);
+app.use('/api/experience', experienceRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send({
