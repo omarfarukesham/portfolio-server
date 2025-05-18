@@ -17,7 +17,7 @@ const project_routes_1 = require("./module/projects/project.routes");
 const skill_routes_1 = require("./module/skills/skill.routes");
 const app = (0, express_1.default)();
 // CORS configuration has solved the issue
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5174', 'https://boitoi-admin.vercel.app', 'https://boitoi-marketplace.vercel.app', 'https://nextjs-blogs-sigma.vercel.app'];
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5174', 'https://portfolio-frontend-flame-kappa.vercel.app', 'https://frontend-dashboard-drab.vercel.app'];
 app.use((0, cors_1.default)({
     origin: function (origin, callback) {
         if (!origin)
