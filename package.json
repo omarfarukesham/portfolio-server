@@ -1,7 +1,7 @@
 {
-  "name": "boitoi-ecommerce",
+  "name": "omar-profile-server",
   "version": "1.0.0",
-  "description": "# Boitoi Project: Assignment Requirements",
+  "description": "#Omar Protfolio Project",
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",

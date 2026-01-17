@@ -17,13 +17,18 @@ const project_routes_1 = require("./module/projects/project.routes");
 const skill_routes_1 = require("./module/skills/skill.routes");
 const app = (0, express_1.default)();
 // CORS configuration has solved the issue
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:5174', 'https://portfolio-frontend-flame-kappa.vercel.app', 'https://frontend-dashboard-drab.vercel.app'];
+const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:5174",
+    "https://portfolio-frontend-flame-kappa.vercel.app",
+    "https://frontend-dashboard-drab.vercel.app",
+];
 app.use((0, cors_1.default)({
     origin: function (origin, callback) {
         if (!origin)
             return callback(null, true);
         if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            const msg = "The CORS policy for this site does not allow access from the specified Origin.";
             return callback(new Error(msg), false);
         }
         return callback(null, true);
@@ -34,20 +39,20 @@ app.use((0, cors_1.default)({
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 // Routes
-app.use('/api/auth', auth_router_1.default);
-app.use('/api/admin', admin_router_1.default);
-app.use('/api/user', user_router_1.default);
-app.use('/api/blogs', blog_router_1.default);
+app.use("/api/auth", auth_router_1.default);
+app.use("/api/admin", admin_router_1.default);
+app.use("/api/user", user_router_1.default);
+app.use("/api/blogs", blog_router_1.default);
 // app.use('/api/products', ProductRoutes);
 // app.use('/api/orders', OrderRoutes);
 // app.use('/api/checkouts', CheckoutRoutes);
-app.use('/api/experience', experience_router_1.experienceRoutes);
-app.use('/api/project', project_routes_1.projectRoutes);
-app.use('/api/skill', skill_routes_1.skillRoutes);
-app.get('/', (req, res) => {
+app.use("/api/experience", experience_router_1.experienceRoutes);
+app.use("/api/project", project_routes_1.projectRoutes);
+app.use("/api/skill", skill_routes_1.skillRoutes);
+app.get("/", (req, res) => {
     res.send({
         status: true,
-        message: 'Portfolio Server is now Live - Alhamdulillah',
+        message: "Omar Portfolio Server is now Live - Alhamdulillah",
     });
 });
 // Error handling
