@@ -15,24 +15,17 @@ const cors_1 = __importDefault(require("cors"));
 const experience_router_1 = require("./module/experience/experience.router");
 const project_routes_1 = require("./module/projects/project.routes");
 const skill_routes_1 = require("./module/skills/skill.routes");
+// eBook commerce modules
+const ebook_routes_1 = require("./module/ebook/ebook.routes");
+const identity_routes_1 = require("./module/identity/identity.routes");
+const wishlist_routes_1 = require("./module/wishlist/wishlist.routes");
+const checkout_routes_1 = require("./module/shop-checkout/checkout.routes");
+const dashboard_routes_1 = require("./module/dashboard/dashboard.routes");
+const download_routes_1 = require("./module/download/download.routes");
+const fireProduct_routes_1 = require("./module/fire-product/fireProduct.routes");
 const app = (0, express_1.default)();
-// CORS configuration has solved the issue
-const allowedOrigins = [
-    "http://localhost:3000",
-    "http://localhost:5174",
-    "https://portfolio-frontend-flame-kappa.vercel.app",
-    "https://frontend-dashboard-drab.vercel.app",
-];
 app.use((0, cors_1.default)({
-    origin: function (origin, callback) {
-        if (!origin)
-            return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = "The CORS policy for this site does not allow access from the specified Origin.";
-            return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-    },
+    origin: true,
     credentials: true,
 }));
 // Parsers
@@ -49,10 +42,18 @@ app.use("/api/blogs", blog_router_1.default);
 app.use("/api/experience", experience_router_1.experienceRoutes);
 app.use("/api/project", project_routes_1.projectRoutes);
 app.use("/api/skill", skill_routes_1.skillRoutes);
+// eBook commerce routes
+app.use("/api/ebooks", ebook_routes_1.ebookRoutes);
+app.use("/api/identity", identity_routes_1.identityRoutes);
+app.use("/api/wishlist", wishlist_routes_1.wishlistRoutes);
+app.use("/api/shop-checkout", checkout_routes_1.shopCheckoutRoutes);
+app.use("/api/dashboard", dashboard_routes_1.dashboardRoutes);
+app.use("/api/download", download_routes_1.downloadRoutes);
+app.use("/api/fire-products", fireProduct_routes_1.fireProductRoutes);
 app.get("/", (req, res) => {
     res.send({
         status: true,
-        message: "Omar Portfolio Server is now Live - Alhamdulillah",
+        message: "Learn Safety Server is now Live - Alhamdulillah",
     });
 });
 // Error handling

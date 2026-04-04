@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.shopCheckoutRoutes = void 0;
+const express_1 = require("express");
+const checkout_controller_1 = require("./checkout.controller");
+const router = (0, express_1.Router)();
+router.post('/init', checkout_controller_1.CheckoutController.init);
+router.post('/success', checkout_controller_1.CheckoutController.success);
+router.post('/fail', checkout_controller_1.CheckoutController.fail);
+router.post('/cancel', checkout_controller_1.CheckoutController.cancel);
+router.post('/ipn', checkout_controller_1.CheckoutController.ipn);
+exports.shopCheckoutRoutes = router;

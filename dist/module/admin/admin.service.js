@@ -14,16 +14,140 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminService = void 0;
 const blog_model_1 = __importDefault(require("../blog/blog.model"));
-const user_model_1 = __importDefault(require("../user/user.model"));
-const blockUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_model_1.default.findByIdAndUpdate(userId, { isBlocked: true }, { new: true });
-    return result;
+const ebook_model_1 = require("../ebook/ebook.model");
+const fireProduct_model_1 = require("../fire-product/fireProduct.model");
+const order_model_1 = require("../shop-order/order.model");
+const payment_model_1 = require("../shop-order/payment.model");
+const identity_model_1 = require("../identity/identity.model");
+const wishlist_model_1 = require("../wishlist/wishlist.model");
+// ── Stats ───────────────────────────────────────────────
+const getStats = () => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const [totalCustomers, totalOrders, totalEbooks, totalFireProducts, revenueAgg] = yield Promise.all([
+        identity_model_1.UserIdentityModel.countDocuments(),
+        order_model_1.OrderModel.countDocuments(),
+        ebook_model_1.EbookModel.countDocuments({ isActive: true }),
+        fireProduct_model_1.FireProductModel.countDocuments({ status: "active" }),
+        order_model_1.OrderModel.aggregate([
+            { $match: { status: "PAID" } },
+            { $group: { _id: null, total: { $sum: "$totalPrice" } } },
+        ]),
+    ]);
+    return {
+        totalCustomers,
+        totalOrders,
+        totalEbooks,
+        totalFireProducts,
+        totalProducts: totalEbooks + totalFireProducts,
+        totalRevenue: ((_a = revenueAgg[0]) === null || _a === void 0 ? void 0 : _a.total) || 0,
+    };
 });
+// ── Customers (UserIdentity) ────────────────────────────
+const getAllCustomers = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const [customers, total] = yield Promise.all([
+        identity_model_1.UserIdentityModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+        identity_model_1.UserIdentityModel.countDocuments(),
+    ]);
+    // Enrich each customer with order count and wishlist count
+    const enriched = yield Promise.all(customers.map((c) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
+        const [orderCount, wishlistCount, totalSpentAgg] = yield Promise.all([
+            order_model_1.OrderModel.countDocuments({ identityId: c._id, status: "PAID" }),
+            wishlist_model_1.WishlistItemModel.countDocuments({ identityId: c._id }),
+            order_model_1.OrderModel.aggregate([
+                { $match: { identityId: c._id, status: "PAID" } },
+                { $group: { _id: null, total: { $sum: "$totalPrice" } } },
+            ]),
+        ]);
+        return Object.assign(Object.assign({}, c), { orderCount,
+            wishlistCount, totalSpent: ((_a = totalSpentAgg[0]) === null || _a === void 0 ? void 0 : _a.total) || 0 });
+    })));
+    return { customers: enriched, total, page, limit };
+});
+// ── Orders ──────────────────────────────────────────────
+const getAllOrders = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const filter = {};
+    if (query.status)
+        filter.status = query.status;
+    const [orders, total] = yield Promise.all([
+        order_model_1.OrderModel.find(filter)
+            .populate("identityId")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
+        order_model_1.OrderModel.countDocuments(filter),
+    ]);
+    return { orders, total, page, limit };
+});
+const updateOrderStatus = (orderId, status) => __awaiter(void 0, void 0, void 0, function* () {
+    const order = yield order_model_1.OrderModel.findByIdAndUpdate(orderId, { status }, { new: true });
+    return order;
+});
+// ── Payments ────────────────────────────────────────────
+const getAllPayments = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const [payments, total] = yield Promise.all([
+        payment_model_1.PaymentModel.find()
+            .populate("orderId")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
+        payment_model_1.PaymentModel.countDocuments(),
+    ]);
+    return { payments, total, page, limit };
+});
+// ── Ebooks CRUD ─────────────────────────────────────────
+const getAllEbooks = () => __awaiter(void 0, void 0, void 0, function* () {
+    return ebook_model_1.EbookModel.find().sort({ createdAt: -1 });
+});
+const createEbook = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    return ebook_model_1.EbookModel.create(data);
+});
+const updateEbook = (id, data) => __awaiter(void 0, void 0, void 0, function* () {
+    return ebook_model_1.EbookModel.findByIdAndUpdate(id, data, { new: true });
+});
+const deleteEbook = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    return ebook_model_1.EbookModel.findByIdAndUpdate(id, { isActive: false }, { new: true });
+});
+// ── Fire Products CRUD ──────────────────────────────────
+const getAllFireProducts = () => __awaiter(void 0, void 0, void 0, function* () {
+    return fireProduct_model_1.FireProductModel.find().sort({ createdAt: -1 });
+});
+const createFireProduct = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    return fireProduct_model_1.FireProductModel.create(data);
+});
+const updateFireProduct = (id, data) => __awaiter(void 0, void 0, void 0, function* () {
+    return fireProduct_model_1.FireProductModel.findByIdAndUpdate(id, data, { new: true });
+});
+const deleteFireProduct = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    return fireProduct_model_1.FireProductModel.findByIdAndUpdate(id, { status: "inactive" }, { new: true });
+});
+// ── Blogs ───────────────────────────────────────────────
 const deleteBlog = (blogId) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield blog_model_1.default.findByIdAndDelete(blogId);
     return result;
 });
 exports.adminService = {
-    blockUser,
+    getStats,
+    getAllCustomers,
+    getAllOrders,
+    updateOrderStatus,
+    getAllPayments,
+    getAllEbooks,
+    createEbook,
+    updateEbook,
+    deleteEbook,
+    getAllFireProducts,
+    createFireProduct,
+    updateFireProduct,
+    deleteFireProduct,
     deleteBlog,
 };
