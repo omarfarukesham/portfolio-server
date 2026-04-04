@@ -31,6 +31,7 @@ const allowedOrigins = [
   "https://portfolio-frontend-flame-kappa.vercel.app",
   "https://frontend-dashboard-drab.vercel.app",
   "https://learnsafety.pro",
+  "https://www.learnsafety.pro",
 ];
 
 app.use(
