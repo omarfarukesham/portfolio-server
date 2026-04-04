@@ -21,6 +21,7 @@ import { wishlistRoutes } from "./module/wishlist/wishlist.routes";
 import { shopCheckoutRoutes } from "./module/shop-checkout/checkout.routes";
 import { dashboardRoutes } from "./module/dashboard/dashboard.routes";
 import { downloadRoutes } from "./module/download/download.routes";
+import { fireProductRoutes } from "./module/fire-product/fireProduct.routes";
 
 const app = express();
 
@@ -72,6 +73,7 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/shop-checkout", shopCheckoutRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/download", downloadRoutes);
+app.use("/api/fire-products", fireProductRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send({
