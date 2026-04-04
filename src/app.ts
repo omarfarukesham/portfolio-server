@@ -14,6 +14,14 @@ import { experienceRoutes } from "./module/experience/experience.router";
 import { projectRoutes } from "./module/projects/project.routes";
 import { skillRoutes } from "./module/skills/skill.routes";
 
+// eBook commerce modules
+import { ebookRoutes } from "./module/ebook/ebook.routes";
+import { identityRoutes } from "./module/identity/identity.routes";
+import { wishlistRoutes } from "./module/wishlist/wishlist.routes";
+import { shopCheckoutRoutes } from "./module/shop-checkout/checkout.routes";
+import { dashboardRoutes } from "./module/dashboard/dashboard.routes";
+import { downloadRoutes } from "./module/download/download.routes";
+
 const app = express();
 
 // CORS configuration has solved the issue
@@ -22,6 +30,7 @@ const allowedOrigins = [
   "http://localhost:5174",
   "https://portfolio-frontend-flame-kappa.vercel.app",
   "https://frontend-dashboard-drab.vercel.app",
+  "https://learnsafety.pro",
 ];
 
 app.use(
@@ -55,10 +64,18 @@ app.use("/api/experience", experienceRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/skill", skillRoutes);
 
+// eBook commerce routes
+app.use("/api/ebooks", ebookRoutes);
+app.use("/api/identity", identityRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/shop-checkout", shopCheckoutRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/download", downloadRoutes);
+
 app.get("/", (req: Request, res: Response) => {
   res.send({
     status: true,
-    message: "Omar Portfolio Server is now Live - Alhamdulillah",
+    message: "Learn Safety Server is now Live - Alhamdulillah",
   });
 });
 
