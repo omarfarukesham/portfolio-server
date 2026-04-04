@@ -25,27 +25,9 @@ import { fireProductRoutes } from "./module/fire-product/fireProduct.routes";
 
 const app = express();
 
-// CORS configuration has solved the issue
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5174",
-  "https://portfolio-frontend-flame-kappa.vercel.app",
-  "https://frontend-dashboard-drab.vercel.app",
-  "https://learnsafety.pro",
-  "https://www.learnsafety.pro",
-];
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg =
-          "The CORS policy for this site does not allow access from the specified Origin.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
+    origin: true,
     credentials: true,
   }),
 );
