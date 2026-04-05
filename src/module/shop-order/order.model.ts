@@ -2,10 +2,15 @@ import { Schema, model, Document, Types } from 'mongoose'
 
 export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED'
 
+export type OrderItemType = 'ebook' | 'fire-product'
+
 export interface IOrderItem {
-  ebookId: Types.ObjectId
+  ebookId?: Types.ObjectId
+  fireProductId?: Types.ObjectId
+  itemType: OrderItemType
   title: string
   price: number
+  quantity: number
 }
 
 export interface IOrder extends Document {
@@ -20,9 +25,12 @@ export interface IOrder extends Document {
 
 const orderItemSchema = new Schema<IOrderItem>(
   {
-    ebookId: { type: Schema.Types.ObjectId, ref: 'Ebook', required: true },
+    ebookId: { type: Schema.Types.ObjectId, ref: 'Ebook' },
+    fireProductId: { type: Schema.Types.ObjectId, ref: 'FireProduct' },
+    itemType: { type: String, enum: ['ebook', 'fire-product'], default: 'ebook' },
     title: { type: String, required: true },
     price: { type: Number, required: true },
+    quantity: { type: Number, default: 1 },
   },
   { _id: false },
 )

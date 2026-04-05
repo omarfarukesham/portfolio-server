@@ -30,6 +30,8 @@ const allowedOrigins = [
     "https://learnsafety.pro",
     "https://www.learnsafety.pro",
     "https://portfolio-server-mocha-omega.vercel.app",
+    "https://sandbox.sslcommerz.com",
+    "https://securepay.sslcommerz.com",
 ];
 const corsOptions = {
     origin: (origin, callback) => {
@@ -53,6 +55,11 @@ const corsOptions = {
     exposedHeaders: ["set-cookie"],
     optionsSuccessStatus: 204,
 };
+// Allow SSLCOMMERZ payment gateway callbacks without CORS restriction
+app.use("/api/shop-checkout/success", (0, cors_1.default)());
+app.use("/api/shop-checkout/fail", (0, cors_1.default)());
+app.use("/api/shop-checkout/cancel", (0, cors_1.default)());
+app.use("/api/shop-checkout/ipn", (0, cors_1.default)());
 app.use((0, cors_1.default)(corsOptions));
 app.options("*", (0, cors_1.default)(corsOptions));
 // Parsers

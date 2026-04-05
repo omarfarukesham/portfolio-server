@@ -3,7 +3,8 @@ const SSLCommerzPayment = require('sslcommerz-lts')
 import config from '../../config'
 import { IdentityService } from '../identity/identity.service'
 import { EbookModel } from '../ebook/ebook.model'
-import { OrderModel, IOrder } from '../shop-order/order.model'
+import { FireProductModel } from '../fire-product/fireProduct.model'
+import { OrderModel } from '../shop-order/order.model'
 import { PaymentModel } from '../shop-order/payment.model'
 import { Types } from 'mongoose'
 
@@ -11,10 +12,17 @@ function generateTranId(): string {
   return `LS_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`
 }
 
+type InitCheckoutItem = {
+  ebookId?: string
+  fireProductId?: string
+  itemType?: 'ebook' | 'fire-product'
+  quantity?: number
+}
+
 type InitCheckoutInput = {
   email?: string
   phone?: string
-  items: { ebookId: string; quantity?: number }[]
+  items: InitCheckoutItem[]
   customerName?: string
 }
 
@@ -27,31 +35,82 @@ const initPayment = async (input: InitCheckoutInput) => {
   // 1. Resolve identity
   const identity = await IdentityService.findOrCreate({ email, phone })
 
-  // 2. Fetch ebook details — accept both ObjectId and slug
-  const isObjectId = (s: string) => /^[a-f\d]{24}$/i.test(s)
-  const slugs = items.filter((i) => !isObjectId(i.ebookId)).map((i) => i.ebookId)
-  const ids = items.filter((i) => isObjectId(i.ebookId)).map((i) => new Types.ObjectId(i.ebookId))
+  // 2. Separate ebook and fire-product items
+  const ebookInputs = items.filter(
+    (i) => i.itemType === 'ebook' || (!i.itemType && i.ebookId),
+  )
+  const fireProductInputs = items.filter((i) => i.itemType === 'fire-product')
 
-  const ebooks = await EbookModel.find({
-    isActive: true,
-    $or: [
-      ...(ids.length ? [{ _id: { $in: ids } }] : []),
-      ...(slugs.length ? [{ slug: { $in: slugs } }] : []),
-    ],
-  })
+  const orderItems: {
+    ebookId?: Types.ObjectId
+    fireProductId?: Types.ObjectId
+    itemType: 'ebook' | 'fire-product'
+    title: string
+    price: number
+    quantity: number
+  }[] = []
 
-  if (ebooks.length === 0) throw new Error('No valid ebooks found')
+  // 3. Fetch ebooks if any
+  if (ebookInputs.length > 0) {
+    const isObjectId = (s: string) => /^[a-f\d]{24}$/i.test(s)
+    const ebookIds = ebookInputs.map((i) => i.ebookId!).filter(Boolean)
+    const slugs = ebookIds.filter((id) => !isObjectId(id))
+    const ids = ebookIds.filter((id) => isObjectId(id)).map((id) => new Types.ObjectId(id))
 
-  const orderItems = ebooks.map((ebook) => ({
-    ebookId: ebook._id as Types.ObjectId,
-    title: ebook.title,
-    price: ebook.price,
-  }))
+    const ebooks = await EbookModel.find({
+      isActive: true,
+      $or: [
+        ...(ids.length ? [{ _id: { $in: ids } }] : []),
+        ...(slugs.length ? [{ slug: { $in: slugs } }] : []),
+      ],
+    })
 
-  const totalPrice = orderItems.reduce((sum, item) => sum + item.price, 0)
+    for (const ebook of ebooks) {
+      const inputItem = ebookInputs.find(
+        (i) => i.ebookId === (ebook._id as Types.ObjectId).toString() || i.ebookId === ebook.slug,
+      )
+      orderItems.push({
+        ebookId: ebook._id as Types.ObjectId,
+        itemType: 'ebook',
+        title: ebook.title,
+        price: ebook.price,
+        quantity: inputItem?.quantity || 1,
+      })
+    }
+  }
+
+  // 4. Fetch fire products if any
+  if (fireProductInputs.length > 0) {
+    const fireIds = fireProductInputs
+      .map((i) => i.fireProductId!)
+      .filter(Boolean)
+      .map((id) => new Types.ObjectId(id))
+
+    const fireProducts = await FireProductModel.find({
+      status: 'active',
+      _id: { $in: fireIds },
+    })
+
+    for (const fp of fireProducts) {
+      const inputItem = fireProductInputs.find(
+        (i) => i.fireProductId === (fp._id as Types.ObjectId).toString(),
+      )
+      orderItems.push({
+        fireProductId: fp._id as Types.ObjectId,
+        itemType: 'fire-product',
+        title: fp.name,
+        price: fp.price,
+        quantity: inputItem?.quantity || 1,
+      })
+    }
+  }
+
+  if (orderItems.length === 0) throw new Error('No valid products found')
+
+  const totalPrice = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const tranId = generateTranId()
 
-  // 3. Create order (PENDING)
+  // 5. Create order (PENDING)
   const order = await OrderModel.create({
     identityId: identity._id,
     items: orderItems,
@@ -60,7 +119,7 @@ const initPayment = async (input: InitCheckoutInput) => {
     tranId,
   })
 
-  // 4. Create payment record (PENDING)
+  // 6. Create payment record (PENDING)
   await PaymentModel.create({
     orderId: order._id,
     tranId,
@@ -68,14 +127,24 @@ const initPayment = async (input: InitCheckoutInput) => {
     amount: totalPrice,
   })
 
-  // 5. Init SSLCOMMERZ
+  // 7. Determine product info for SSLCOMMERZ
+  const hasFireProducts = fireProductInputs.length > 0
+  const hasEbooks = ebookInputs.length > 0
+  const productNames = orderItems.map((i) => i.title).join(', ')
+  const productCategory = hasEbooks && hasFireProducts
+    ? 'eBook & Fire Safety'
+    : hasFireProducts
+      ? 'Fire Safety Product'
+      : 'eBook'
+  const productProfile = hasFireProducts ? 'physical-goods' : 'non-physical-goods'
+  const shippingMethod = hasFireProducts ? 'Courier' : 'NO'
+
+  // 8. Init SSLCOMMERZ
   const sslcz = new SSLCommerzPayment(
     config.ssl.store_id,
     config.ssl.store_passwd,
     config.ssl.is_live,
   )
-
-  const productNames = ebooks.map((e) => e.title).join(', ')
 
   const sslData = {
     total_amount: totalPrice,
@@ -85,16 +154,23 @@ const initPayment = async (input: InitCheckoutInput) => {
     fail_url: `${config.backend_url}/api/shop-checkout/fail`,
     cancel_url: `${config.backend_url}/api/shop-checkout/cancel`,
     ipn_url: `${config.backend_url}/api/shop-checkout/ipn`,
-    shipping_method: 'NO',
+    shipping_method: shippingMethod,
     product_name: productNames,
-    product_category: 'eBook',
-    product_profile: 'non-physical-goods',
+    product_category: productCategory,
+    product_profile: productProfile,
     cus_name: customerName || 'Customer',
     cus_email: email || 'no-email@learnsafety.pro',
     cus_phone: phone || '01700000000',
     cus_add1: 'Dhaka',
     cus_city: 'Dhaka',
     cus_country: 'Bangladesh',
+    ...(hasFireProducts && {
+      ship_name: customerName || 'Customer',
+      ship_add1: 'Dhaka',
+      ship_city: 'Dhaka',
+      ship_country: 'Bangladesh',
+      ship_postcode: '1000',
+    }),
     value_a: (order._id as Types.ObjectId).toString(),
     value_b: (identity._id as Types.ObjectId).toString(),
   }
@@ -103,7 +179,6 @@ const initPayment = async (input: InitCheckoutInput) => {
   console.log('SSLCOMMERZ init response:', JSON.stringify(apiResponse, null, 2))
 
   if (!apiResponse?.GatewayPageURL) {
-    // Mark order as failed if gateway init fails
     await OrderModel.findByIdAndUpdate(order._id, { status: 'FAILED' })
     await PaymentModel.findOneAndUpdate({ tranId }, { status: 'FAILED' })
     throw new Error(
@@ -122,12 +197,10 @@ const handleSuccess = async (payload: Record<string, string>) => {
   const { tran_id, val_id, card_type, bank_tran_id } = payload
   if (!tran_id) throw new Error('Transaction ID missing')
 
-  // Idempotent: skip if already PAID
   const order = await OrderModel.findOne({ tranId: tran_id })
   if (!order) throw new Error('Order not found')
   if (order.status === 'PAID') return order
 
-  // Validate with SSLCOMMERZ
   const sslcz = new SSLCommerzPayment(
     config.ssl.store_id,
     config.ssl.store_passwd,
@@ -139,6 +212,15 @@ const handleSuccess = async (payload: Record<string, string>) => {
   if (validationResponse.status === 'VALID' || validationResponse.status === 'VALIDATED') {
     order.status = 'PAID'
     await order.save()
+
+    // Decrement stock for fire products
+    for (const item of order.items) {
+      if (item.itemType === 'fire-product' && item.fireProductId) {
+        await FireProductModel.findByIdAndUpdate(item.fireProductId, {
+          $inc: { stock: -(item.quantity || 1) },
+        })
+      }
+    }
 
     await PaymentModel.findOneAndUpdate(
       { tranId: tran_id },
