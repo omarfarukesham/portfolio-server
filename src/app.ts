@@ -1,15 +1,13 @@
 import express, { Request, Response } from "express";
+import cookieParser from "cookie-parser";
+import cors, { CorsOptions } from "cors";
+
 import userRouter from "./module/user/user.router";
 import authRouter from "./module/auth/auth.router";
 import blogRouter from "./module/blog/blog.router";
-import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import adminRouter from "./module/admin/admin.router";
+import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import notFound from "./middlewares/notFound";
-import { ProductRoutes } from "./module/product/product.routes";
-import { OrderRoutes } from "./module/order/order.routes";
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import { CheckoutRoutes } from "./module/checkout/checkout.routes";
 import { experienceRoutes } from "./module/experience/experience.router";
 import { projectRoutes } from "./module/projects/project.routes";
 import { skillRoutes } from "./module/skills/skill.routes";
@@ -25,12 +23,41 @@ import { fireProductRoutes } from "./module/fire-product/fireProduct.routes";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  }),
-);
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://learnsafety.pro",
+  "https://www.learnsafety.pro",
+  "https://portfolio-server-mocha-omega.vercel.app",
+];
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    // allow server-to-server, postman, curl, mobile apps, same-origin requests
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+  ],
+  exposedHeaders: ["set-cookie"],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Parsers
 app.use(express.json());
@@ -41,9 +68,6 @@ app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
 app.use("/api/blogs", blogRouter);
-// app.use('/api/products', ProductRoutes);
-// app.use('/api/orders', OrderRoutes);
-// app.use('/api/checkouts', CheckoutRoutes);
 app.use("/api/experience", experienceRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/skill", skillRoutes);
