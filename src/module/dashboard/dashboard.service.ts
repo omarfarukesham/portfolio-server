@@ -9,7 +9,7 @@ const getDashboard = async (identifier: string) => {
   }
 
   const [purchases, wishlist] = await Promise.all([
-    OrderModel.find({ identityId: identity._id, status: 'PAID' })
+    OrderModel.find({ identityId: identity._id, status: { $in: ['PAID', 'PENDING'] } })
       .populate('items.ebookId')
       .sort({ createdAt: -1 }),
     WishlistItemModel.find({ identityId: identity._id }).populate('ebookId'),
@@ -20,7 +20,7 @@ const getDashboard = async (identifier: string) => {
 
 const getDashboardById = async (identityId: string) => {
   const [purchases, wishlist] = await Promise.all([
-    OrderModel.find({ identityId, status: 'PAID' })
+    OrderModel.find({ identityId, status: { $in: ['PAID', 'PENDING'] } })
       .populate('items.ebookId')
       .sort({ createdAt: -1 }),
     WishlistItemModel.find({ identityId }).populate('ebookId'),

@@ -20,6 +20,7 @@ import { shopCheckoutRoutes } from "./module/shop-checkout/checkout.routes";
 import { dashboardRoutes } from "./module/dashboard/dashboard.routes";
 import { downloadRoutes } from "./module/download/download.routes";
 import { fireProductRoutes } from "./module/fire-product/fireProduct.routes";
+import { ebookOrderRoutes } from "./module/ebook-order/ebookOrder.routes";
 
 const app = express();
 
@@ -89,6 +90,7 @@ app.use("/api/shop-checkout", shopCheckoutRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/download", downloadRoutes);
 app.use("/api/fire-products", fireProductRoutes);
+app.use("/api/ebook-order", ebookOrderRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send({
