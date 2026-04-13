@@ -23,6 +23,7 @@ const checkout_routes_1 = require("./module/shop-checkout/checkout.routes");
 const dashboard_routes_1 = require("./module/dashboard/dashboard.routes");
 const download_routes_1 = require("./module/download/download.routes");
 const fireProduct_routes_1 = require("./module/fire-product/fireProduct.routes");
+const ebookOrder_routes_1 = require("./module/ebook-order/ebookOrder.routes");
 const app = (0, express_1.default)();
 const allowedOrigins = [
     "http://localhost:3000",
@@ -82,6 +83,7 @@ app.use("/api/shop-checkout", checkout_routes_1.shopCheckoutRoutes);
 app.use("/api/dashboard", dashboard_routes_1.dashboardRoutes);
 app.use("/api/download", download_routes_1.downloadRoutes);
 app.use("/api/fire-products", fireProduct_routes_1.fireProductRoutes);
+app.use("/api/ebook-order", ebookOrder_routes_1.ebookOrderRoutes);
 app.get("/", (req, res) => {
     res.send({
         status: true,

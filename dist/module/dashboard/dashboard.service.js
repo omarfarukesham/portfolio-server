@@ -19,7 +19,7 @@ const getDashboard = (identifier) => __awaiter(void 0, void 0, void 0, function*
         return { identity: null, purchases: [], wishlist: [] };
     }
     const [purchases, wishlist] = yield Promise.all([
-        order_model_1.OrderModel.find({ identityId: identity._id, status: 'PAID' })
+        order_model_1.OrderModel.find({ identityId: identity._id, status: { $in: ['PAID', 'PENDING'] } })
             .populate('items.ebookId')
             .sort({ createdAt: -1 }),
         wishlist_model_1.WishlistItemModel.find({ identityId: identity._id }).populate('ebookId'),
@@ -28,7 +28,7 @@ const getDashboard = (identifier) => __awaiter(void 0, void 0, void 0, function*
 });
 const getDashboardById = (identityId) => __awaiter(void 0, void 0, void 0, function* () {
     const [purchases, wishlist] = yield Promise.all([
-        order_model_1.OrderModel.find({ identityId, status: 'PAID' })
+        order_model_1.OrderModel.find({ identityId, status: { $in: ['PAID', 'PENDING'] } })
             .populate('items.ebookId')
             .sort({ createdAt: -1 }),
         wishlist_model_1.WishlistItemModel.find({ identityId }).populate('ebookId'),
