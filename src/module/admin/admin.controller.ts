@@ -137,6 +137,17 @@ const deleteFireProduct = catchAsync(async (req, res) => {
   });
 });
 
+// ── Send Ebook Email ────────────────────────────────────
+const sendEbookEmail = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await adminService.sendEbookEmailToCustomer(id);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Ebook email sent successfully",
+    data: result,
+  });
+});
+
 // ── Blogs ───────────────────────────────────────────────
 const deleteBlogByAdmin = catchAsync(async (req, res) => {
   const { id } = req.params;
@@ -163,5 +174,6 @@ export const adminController = {
   createFireProduct,
   updateFireProduct,
   deleteFireProduct,
+  sendEbookEmail,
   deleteBlogByAdmin,
 };

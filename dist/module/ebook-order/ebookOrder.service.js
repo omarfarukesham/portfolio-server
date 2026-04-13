@@ -39,6 +39,7 @@ const createEbookOrder = (input) => __awaiter(void 0, void 0, void 0, function* 
         totalPrice: EBOOK_PRICE,
         status: 'PENDING',
         tranId: input.transactionId,
+        paymentMethod: input.paymentMethod,
     });
     return order;
 });

@@ -1,6 +1,7 @@
 import { Schema, model, Document, Types } from 'mongoose'
 
 export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED'
+export type PaymentMethod = 'bkash' | 'nagad'
 
 export type OrderItemType = 'ebook' | 'fire-product'
 
@@ -19,6 +20,8 @@ export interface IOrder extends Document {
   totalPrice: number
   status: OrderStatus
   tranId: string
+  paymentMethod: PaymentMethod
+  emailSent: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -46,6 +49,8 @@ const orderSchema = new Schema<IOrder>(
       default: 'PENDING',
     },
     tranId: { type: String, required: true, unique: true },
+    paymentMethod: { type: String, enum: ['bkash', 'nagad'], required: true },
+    emailSent: { type: Boolean, default: false },
   },
   { timestamps: true },
 )

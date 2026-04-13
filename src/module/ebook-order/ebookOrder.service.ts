@@ -32,6 +32,7 @@ const createEbookOrder = async (input: EbookOrderInput) => {
     totalPrice: EBOOK_PRICE,
     status: 'PENDING',
     tranId: input.transactionId,
+    paymentMethod: input.paymentMethod,
   })
 
   return order

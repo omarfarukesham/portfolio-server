@@ -15,6 +15,7 @@ adminRouter.get('/customers', (0, auth_1.default)(user_constants_1.USER_ROLE.adm
 // Orders
 adminRouter.get('/orders', (0, auth_1.default)(user_constants_1.USER_ROLE.admin), admin_controller_1.adminController.getAllOrders);
 adminRouter.patch('/orders/:id/status', (0, auth_1.default)(user_constants_1.USER_ROLE.admin), admin_controller_1.adminController.updateOrderStatus);
+adminRouter.post('/orders/:id/send-ebook-email', (0, auth_1.default)(user_constants_1.USER_ROLE.admin), admin_controller_1.adminController.sendEbookEmail);
 // Payments
 adminRouter.get('/payments', (0, auth_1.default)(user_constants_1.USER_ROLE.admin), admin_controller_1.adminController.getAllPayments);
 // Ebooks CRUD

@@ -20,5 +20,7 @@ const orderSchema = new mongoose_1.Schema({
         default: 'PENDING',
     },
     tranId: { type: String, required: true, unique: true },
+    paymentMethod: { type: String, enum: ['bkash', 'nagad'], required: true },
+    emailSent: { type: Boolean, default: false },
 }, { timestamps: true });
 exports.OrderModel = (0, mongoose_1.model)('ShopOrder', orderSchema);

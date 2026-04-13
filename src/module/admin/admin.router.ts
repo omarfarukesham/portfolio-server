@@ -14,6 +14,7 @@ adminRouter.get('/customers', auth(USER_ROLE.admin), adminController.getAllCusto
 // Orders
 adminRouter.get('/orders', auth(USER_ROLE.admin), adminController.getAllOrders)
 adminRouter.patch('/orders/:id/status', auth(USER_ROLE.admin), adminController.updateOrderStatus)
+adminRouter.post('/orders/:id/send-ebook-email', auth(USER_ROLE.admin), adminController.sendEbookEmail)
 
 // Payments
 adminRouter.get('/payments', auth(USER_ROLE.admin), adminController.getAllPayments)

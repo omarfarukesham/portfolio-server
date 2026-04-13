@@ -5,6 +5,7 @@ import { OrderModel } from "../shop-order/order.model";
 import { PaymentModel } from "../shop-order/payment.model";
 import { UserIdentityModel } from "../identity/identity.model";
 import { WishlistItemModel } from "../wishlist/wishlist.model";
+import { sendEbookEmail } from "../../utils/email";
 
 // ── Stats ───────────────────────────────────────────────
 const getStats = async () => {
@@ -150,6 +151,36 @@ const deleteFireProduct = async (id: string) => {
   );
 };
 
+// ── Send Ebook Email ────────────────────────────────────
+const sendEbookEmailToCustomer = async (orderId: string) => {
+  const order = await OrderModel.findById(orderId).populate("identityId");
+  if (!order) throw new Error("Order not found");
+  if (order.status !== "PAID") throw new Error("Order is not paid yet");
+  if (order.emailSent) throw new Error("Email has already been sent for this order");
+
+  const identity = order.identityId as any;
+  if (!identity?.email) throw new Error("Customer email not found");
+
+  const ebookItem = order.items.find((item) => item.itemType === "ebook");
+  if (!ebookItem) throw new Error("No ebook found in this order");
+
+  const ebook = await EbookModel.findOne({ title: ebookItem.title });
+  if (!ebook) throw new Error("Ebook not found in database");
+  if (!ebook.pdfPath) throw new Error("Ebook download URL (pdfPath) is not set");
+
+  await sendEbookEmail({
+    to: identity.email,
+    customerName: identity.email.split("@")[0],
+    ebookTitle: ebook.title,
+    downloadUrl: ebook.pdfPath,
+  });
+
+  order.emailSent = true;
+  await order.save();
+
+  return order;
+};
+
 // ── Blogs ───────────────────────────────────────────────
 const deleteBlog = async (blogId: string) => {
   const result = await Blog.findByIdAndDelete(blogId);
@@ -170,5 +201,6 @@ export const adminService = {
   createFireProduct,
   updateFireProduct,
   deleteFireProduct,
+  sendEbookEmailToCustomer,
   deleteBlog,
 };

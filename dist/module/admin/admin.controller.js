@@ -143,6 +143,16 @@ const deleteFireProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void
         data: result,
     });
 }));
+// ── Send Ebook Email ────────────────────────────────────
+const sendEbookEmail = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const result = yield admin_service_1.adminService.sendEbookEmailToCustomer(id);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: "Ebook email sent successfully",
+        data: result,
+    });
+}));
 // ── Blogs ───────────────────────────────────────────────
 const deleteBlogByAdmin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
@@ -169,5 +179,6 @@ exports.adminController = {
     createFireProduct,
     updateFireProduct,
     deleteFireProduct,
+    sendEbookEmail,
     deleteBlogByAdmin,
 };

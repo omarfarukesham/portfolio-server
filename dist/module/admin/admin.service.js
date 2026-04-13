@@ -20,6 +20,7 @@ const order_model_1 = require("../shop-order/order.model");
 const payment_model_1 = require("../shop-order/payment.model");
 const identity_model_1 = require("../identity/identity.model");
 const wishlist_model_1 = require("../wishlist/wishlist.model");
+const email_1 = require("../../utils/email");
 // ── Stats ───────────────────────────────────────────────
 const getStats = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -130,6 +131,36 @@ const updateFireProduct = (id, data) => __awaiter(void 0, void 0, void 0, functi
 const deleteFireProduct = (id) => __awaiter(void 0, void 0, void 0, function* () {
     return fireProduct_model_1.FireProductModel.findByIdAndUpdate(id, { status: "inactive" }, { new: true });
 });
+// ── Send Ebook Email ────────────────────────────────────
+const sendEbookEmailToCustomer = (orderId) => __awaiter(void 0, void 0, void 0, function* () {
+    const order = yield order_model_1.OrderModel.findById(orderId).populate("identityId");
+    if (!order)
+        throw new Error("Order not found");
+    if (order.status !== "PAID")
+        throw new Error("Order is not paid yet");
+    if (order.emailSent)
+        throw new Error("Email has already been sent for this order");
+    const identity = order.identityId;
+    if (!(identity === null || identity === void 0 ? void 0 : identity.email))
+        throw new Error("Customer email not found");
+    const ebookItem = order.items.find((item) => item.itemType === "ebook");
+    if (!ebookItem)
+        throw new Error("No ebook found in this order");
+    const ebook = yield ebook_model_1.EbookModel.findOne({ title: ebookItem.title });
+    if (!ebook)
+        throw new Error("Ebook not found in database");
+    if (!ebook.pdfPath)
+        throw new Error("Ebook download URL (pdfPath) is not set");
+    yield (0, email_1.sendEbookEmail)({
+        to: identity.email,
+        customerName: identity.email.split("@")[0],
+        ebookTitle: ebook.title,
+        downloadUrl: ebook.pdfPath,
+    });
+    order.emailSent = true;
+    yield order.save();
+    return order;
+});
 // ── Blogs ───────────────────────────────────────────────
 const deleteBlog = (blogId) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield blog_model_1.default.findByIdAndDelete(blogId);
@@ -149,5 +180,6 @@ exports.adminService = {
     createFireProduct,
     updateFireProduct,
     deleteFireProduct,
+    sendEbookEmailToCustomer,
     deleteBlog,
 };
