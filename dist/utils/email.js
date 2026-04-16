@@ -104,10 +104,16 @@ const sendEbookEmail = (payload) => __awaiter(void 0, void 0, void 0, function* 
                 </a>
               </div>
 
-              <p style="margin:24px 0 0; color:#6b7280; font-size:12px; line-height:1.7; text-align:center;">
-                Having trouble? Copy this link into your browser:<br/>
-                <a href="${downloadUrl}" style="color:#16a34a; word-break:break-all;">${downloadUrl}</a>
-              </p>
+              <!-- WhatsApp Support -->
+              <div style="margin:24px 0 0; text-align:center; background-color:#f0fdf4; border:1px dashed #86efac; border-radius:10px; padding:18px 20px;">
+                <p style="margin:0 0 10px; color:#4b5563; font-size:13px; line-height:1.6;">
+                  Having trouble downloading? Contact us on WhatsApp:
+                </p>
+                <a href="https://wa.me/8801722434764"
+                   style="display:inline-block; background-color:#25d366; color:#ffffff; text-decoration:none; padding:10px 22px; border-radius:8px; font-size:14px; font-weight:700;">
+                  WhatsApp: +8801722434764
+                </a>
+              </div>
 
             </td>
           </tr>

@@ -134,6 +134,7 @@ const deleteFireProduct = (id) => __awaiter(void 0, void 0, void 0, function* ()
 // ── Send Ebook Email ────────────────────────────────────
 const DEFAULT_EBOOK_DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id=1aOZoPPkJt1TD9PeCQhry5XRNklPPKuTy";
 const sendEbookEmailToCustomer = (orderId) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const order = yield order_model_1.OrderModel.findById(orderId).populate("identityId");
     if (!order)
         throw new Error("Order not found");
@@ -148,7 +149,8 @@ const sendEbookEmailToCustomer = (orderId) => __awaiter(void 0, void 0, void 0, 
     if (!ebookItem)
         throw new Error("No ebook found in this order");
     const ebook = yield ebook_model_1.EbookModel.findOne({ title: ebookItem.title });
-    const downloadUrl = (ebook === null || ebook === void 0 ? void 0 : ebook.pdfPath) || DEFAULT_EBOOK_DOWNLOAD_URL;
+    const isValidUrl = (_a = ebook === null || ebook === void 0 ? void 0 : ebook.pdfPath) === null || _a === void 0 ? void 0 : _a.startsWith("http");
+    const downloadUrl = isValidUrl ? ebook.pdfPath : DEFAULT_EBOOK_DOWNLOAD_URL;
     yield (0, email_1.sendEbookEmail)({
         to: identity.email,
         customerName: identity.email.split("@")[0],

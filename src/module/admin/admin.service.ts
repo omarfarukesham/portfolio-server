@@ -168,7 +168,8 @@ const sendEbookEmailToCustomer = async (orderId: string) => {
   if (!ebookItem) throw new Error("No ebook found in this order");
 
   const ebook = await EbookModel.findOne({ title: ebookItem.title });
-  const downloadUrl = ebook?.pdfPath || DEFAULT_EBOOK_DOWNLOAD_URL;
+  const isValidUrl = ebook?.pdfPath?.startsWith("http");
+  const downloadUrl = isValidUrl ? ebook!.pdfPath : DEFAULT_EBOOK_DOWNLOAD_URL;
 
   await sendEbookEmail({
     to: identity.email,
