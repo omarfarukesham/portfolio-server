@@ -152,6 +152,9 @@ const deleteFireProduct = async (id: string) => {
 };
 
 // ── Send Ebook Email ────────────────────────────────────
+const DEFAULT_EBOOK_DOWNLOAD_URL =
+  "https://drive.google.com/uc?export=download&id=1aOZoPPkJt1TD9PeCQhry5XRNklPPKuTy";
+
 const sendEbookEmailToCustomer = async (orderId: string) => {
   const order = await OrderModel.findById(orderId).populate("identityId");
   if (!order) throw new Error("Order not found");
@@ -165,14 +168,13 @@ const sendEbookEmailToCustomer = async (orderId: string) => {
   if (!ebookItem) throw new Error("No ebook found in this order");
 
   const ebook = await EbookModel.findOne({ title: ebookItem.title });
-  if (!ebook) throw new Error("Ebook not found in database");
-  if (!ebook.pdfPath) throw new Error("Ebook download URL (pdfPath) is not set");
+  const downloadUrl = ebook?.pdfPath || DEFAULT_EBOOK_DOWNLOAD_URL;
 
   await sendEbookEmail({
     to: identity.email,
     customerName: identity.email.split("@")[0],
-    ebookTitle: ebook.title,
-    downloadUrl: ebook.pdfPath,
+    ebookTitle: ebookItem.title,
+    downloadUrl,
   });
 
   order.emailSent = true;

@@ -132,6 +132,7 @@ const deleteFireProduct = (id) => __awaiter(void 0, void 0, void 0, function* ()
     return fireProduct_model_1.FireProductModel.findByIdAndUpdate(id, { status: "inactive" }, { new: true });
 });
 // ── Send Ebook Email ────────────────────────────────────
+const DEFAULT_EBOOK_DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id=1aOZoPPkJt1TD9PeCQhry5XRNklPPKuTy";
 const sendEbookEmailToCustomer = (orderId) => __awaiter(void 0, void 0, void 0, function* () {
     const order = yield order_model_1.OrderModel.findById(orderId).populate("identityId");
     if (!order)
@@ -147,15 +148,12 @@ const sendEbookEmailToCustomer = (orderId) => __awaiter(void 0, void 0, void 0, 
     if (!ebookItem)
         throw new Error("No ebook found in this order");
     const ebook = yield ebook_model_1.EbookModel.findOne({ title: ebookItem.title });
-    if (!ebook)
-        throw new Error("Ebook not found in database");
-    if (!ebook.pdfPath)
-        throw new Error("Ebook download URL (pdfPath) is not set");
+    const downloadUrl = (ebook === null || ebook === void 0 ? void 0 : ebook.pdfPath) || DEFAULT_EBOOK_DOWNLOAD_URL;
     yield (0, email_1.sendEbookEmail)({
         to: identity.email,
         customerName: identity.email.split("@")[0],
-        ebookTitle: ebook.title,
-        downloadUrl: ebook.pdfPath,
+        ebookTitle: ebookItem.title,
+        downloadUrl,
     });
     order.emailSent = true;
     yield order.save();
